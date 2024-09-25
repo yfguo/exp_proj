@@ -7,8 +7,7 @@ VARIANT=${1:-cpu}
 parse_spec ${VARIANT} mpich
 set_compiler
 
-OPT="--without-cuda --without-hip --without-ze"
-OPT+=" --disable-fortran --disable-romio"
+OPT="--disable-fortran --disable-romio"
 
 case "${SPEC_REPO}" in
     quicq)
@@ -34,8 +33,10 @@ case "${SPEC_DEVICE}" in
 esac
 
 # OPT+=" --enable-fast=O2 --enable-avx --enable-g=dbg,asan"
-OPT+=" --enable-fast=O2,avx"
-_arr=(${SPEC_OPTIONS//_/})
+# OPT+=" --enable-fast=O2,avx"
+OPT+=" --enable-fast=ndebug,O3,avx"
+IFS=+ read -r -a _arr <<< "${SPEC_OPTIONS}"
+unset IFS
 
 for _item in ${_arr[@]}; do
     case "${_item}" in
@@ -45,7 +46,7 @@ for _item in ${_arr[@]}; do
             OPT+=" --enable-g=all"
             ;;
         opt)
-            OPT+=" --enable-fast=all,O3"
+            OPT+=" --enable-fast=ndebug,O3,avx,avx512f"
             ;;
         probe)
             OPT+=" --disable-visibility"
@@ -59,11 +60,28 @@ for _item in ${_arr[@]}; do
         asan)
             OPT+=" --enable-g=dbg,asan --disable-visibility"
             ;;
+        sunspot)
+            OPT+=" --with-pmi=pmix --with-pmix=/usr --with-pm=no"
+            ;;
+        cuda)
+            _gpu=1
+            ;;
+        hip)
+            _gpu=1
+            ;;
+        ze)
+            OPT+=" --with-ze=/usr"
+            _gpu=1
+            ;;
         *)
             exit -1
             ;;
     esac
 done
+
+if [[ -z ${_gpu} ]]; then
+    OPT+=" --without-cuda --without-hip --without-ze"
+fi
 
 echo "OPT: $OPT"
 
@@ -101,3 +119,4 @@ fi
 make -j 64 install 2>&1 | tee mi.txt
 
 popd
+

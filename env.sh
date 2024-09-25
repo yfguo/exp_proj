@@ -34,7 +34,8 @@ op_log() {
 }
 
 split_and_sort() {
-    local word_array=(${1//_/})
+    IFS=${2:-+} read -r -a word_array <<< "$1"
+    unset IFS
 
     # Sort the array
     sorted_array=($(printf '%s\n' "${word_array[@]}" | sort))
@@ -46,6 +47,10 @@ split_and_sort() {
             SPEC_OPTIONS=${SPEC_OPTIONS}_${_item}
         fi
     done
+}
+
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
 }
 
 SPEC_REPO="main"
@@ -82,6 +87,15 @@ parse_spec() {
                 if [[ -d ${BASE_DIR}/${_repo_base}/${_item} ]]; then
                     SPEC_REPO=${_item}
                 else
+                    case "${_item}" in
+                        sunspot)
+                            SPEC_PM=cray
+                            ;;
+                        *)
+                            SPEC_PM=hydra
+                            ;;
+                    esac
+
                     if [[ -z ${SPEC_OPTIONS_RAW} ]]; then
                         SPEC_OPTIONS_RAW=${_item}
                     else
@@ -102,6 +116,7 @@ parse_spec() {
     echo "SPEC_COMPILER: ${SPEC_COMPILER}"
     echo "SPEC_DEVICE: ${SPEC_DEVICE}"
     echo "SPEC_OPTIONS: ${SPEC_OPTIONS}"
+    echo "SPEC_PM: ${SPEC_PM}"
 }
 
 set_compiler() {
@@ -118,7 +133,9 @@ set_compiler() {
             OPT_COMPILER=""
             ;;
         intel)
-            module load intel/oneapi/release
+            if ! command_exists "icx"; then
+                module load intel/oneapi/release
+            fi
             CC=icx
             CXX=icpx
             OPT_COMPILER=""
@@ -151,3 +168,4 @@ set_device() {
     esac
     echo "OPT_DEVICE: ${OPT_DEVICE} ${OPT_DEVICE_PATH}"
 }
+

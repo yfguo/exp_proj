@@ -39,3 +39,15 @@ fi
 if [[ ! -d ${INSTALL_DIR} ]]; then
     mkdir -p ${INSTALL_DIR}
 fi
+
+if [[ ! -d ${BASE_DIR}/hydra ]]; then
+    mkdir -p ${BASE_DIR}/hydra
+    curl -o ${BASE_DIR}/hydra/hydra-stable.tar.gz https://www.mpich.org/static/downloads/4.2.2/hydra-4.2.2.tar.gz
+    mkdir -p ${BASE_DIR}/hydra/stable && tar zxvf ${BASE_DIR}/hydra/hydra-stable.tar.gz --strip-components 1 -C ${BASE_DIR}/hydra/stable
+    pushd ${BASE_DIR}/hydra/stable
+    ./configure --prefix=${INSTALL_DIR}/hydra/stable 2>&1 | tee c.txt
+    make -j32 install 2>&1 | tee mi.txt
+    popd
+fi
+
+
