@@ -44,7 +44,7 @@ split_and_sort() {
         if [[ -z ${SPEC_OPTIONS} ]]; then
             SPEC_OPTIONS=${_item}
         else
-            SPEC_OPTIONS=${SPEC_OPTIONS}_${_item}
+            SPEC_OPTIONS=${SPEC_OPTIONS}${2:-+}${_item}
         fi
     done
 }
@@ -99,7 +99,7 @@ parse_spec() {
                     if [[ -z ${SPEC_OPTIONS_RAW} ]]; then
                         SPEC_OPTIONS_RAW=${_item}
                     else
-                        SPEC_OPTIONS_RAW=${SPEC_OPTIONS_RAW}_${_item}
+                        SPEC_OPTIONS_RAW=${SPEC_OPTIONS_RAW}+${_item}
                     fi
                 fi
                 ;;
@@ -110,7 +110,7 @@ parse_spec() {
         SPEC_OPTIONS_RAW="default"
     fi
 
-    split_and_sort ${SPEC_OPTIONS_RAW}
+    split_and_sort ${SPEC_OPTIONS_RAW} +
 
     echo "SPEC_REPO: ${SPEC_REPO}"
     echo "SPEC_COMPILER: ${SPEC_COMPILER}"
@@ -122,7 +122,7 @@ parse_spec() {
 set_compiler() {
     case "${SPEC_COMPILER}" in
         gnu)
-            module load gcc/14.1.0
+            module load gcc
             CC=gcc
             CXX=g++
             OPT_COMPILER=""
@@ -157,7 +157,8 @@ set_device() {
     case "${SPEC_DEVICE}" in
         ofi)
             OPT_DEVICE="--with-device=ch4:ofi"
-            OPT_DEVICE_PATH="--with-libfabric=${INSTALL_DIR}/libfabric/main-${SPEC_COMPILER}-${param}"
+            # OPT_DEVICE_PATH="--with-libfabric=${INSTALL_DIR}/libfabric/main-${SPEC_COMPILER}-${param}"
+            OPT_DEVICE_PATH="--with-libfabric=/opt/cray/libfabric/1.15.2.0"
             ;;
         ucx)
             OPT_DEVICE="--with-device=ch4:ucx"
@@ -168,4 +169,3 @@ set_device() {
     esac
     echo "OPT_DEVICE: ${OPT_DEVICE} ${OPT_DEVICE_PATH}"
 }
-

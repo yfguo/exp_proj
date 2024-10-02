@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 source ../env.sh
 
@@ -63,7 +63,11 @@ for _item in ${_arr[@]}; do
         sunspot)
             OPT+=" --with-pmi=pmix --with-pmix=/usr --with-pm=no"
             ;;
+        polaris)
+            OPT+=" --with-pmi=pmix --with-pmix=$CRAY_PMI_PREFIX --with-pm=no"
+            ;;
         cuda)
+            OPT+=" --with-cuda=$CRAY_NVIDIA_PREFIX"
             _gpu=1
             ;;
         hip)
@@ -72,6 +76,11 @@ for _item in ${_arr[@]}; do
         ze)
             OPT+=" --with-ze=/usr"
             _gpu=1
+            ;;
+        config)
+            FORCE_GEN=1
+            FORCE_CONF=1
+            NO_MAKE=1
             ;;
         *)
             exit -1
@@ -116,7 +125,8 @@ if [[ ! -f ${BUILD_DIR}/Makefile || ! -z ${FORCE_GEN+x} || ! -z ${FORCE_CONF+x} 
         ${OPT} 2>&1 | tee c.txt
 fi
 
-make -j 64 install 2>&1 | tee mi.txt
+if [[ -z ${NO_MAKE+x} ]]; then
+    make -j 64 install 2>&1 | tee mi.txt
+fi
 
 popd
-
