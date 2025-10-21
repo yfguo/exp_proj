@@ -4,17 +4,14 @@ source ./env.sh
 
 if [[ ! -d ${BASE_DIR}/ucx ]]; then
     mkdir -p ${BASE_DIR}/ucx
-    cp build-ucx.sh ${BASE_DIR}/ucx/build.sh
 fi
 
 if [[ ! -d ${BASE_DIR}/libfabric ]]; then
     mkdir -p ${BASE_DIR}/libfabric
-    cp build-libfabric.sh ${BASE_DIR}/libfabric/build.sh
 fi
 
 if [[ ! -d ${BASE_DIR}/mpich ]]; then
     mkdir -p ${BASE_DIR}/mpich
-    cp build-mpich.sh ${BASE_DIR}/mpich/build.sh
 fi
 
 if [[ ! -d ${BASE_DIR}/ucx/main ]]; then
